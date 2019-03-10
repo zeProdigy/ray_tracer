@@ -6,7 +6,8 @@ use super::Intersection;
 pub struct Sphere {
 	pub center: core::Point,
 	pub radius: f32,
-	pub color: core::Color
+	pub color: core::Color,
+	pub reflection: i32
 }
 
 impl Intersection for Sphere {
@@ -43,12 +44,16 @@ impl Intersection for Sphere {
 		(false, 0.0)
 	}
 
+	fn get_normal(&self, intersect: &core::Point) -> core::Point {
+		let normal = math::subtract(&intersect, &self.center);
+		math::divide(&normal, math::length(&normal))
+	}
+
 	fn get_color(&self) -> &core::Color {
 		&self.color
 	}
 
-	fn get_normal(&self, intersect: &core::Point) -> core::Point {
-		let normal = math::subtract(&intersect, &self.center);
-		math::divide(&normal, math::length(&normal))
+	fn get_reflection_rate(&self) -> i32 {
+		self.reflection
 	}
 }

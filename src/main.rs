@@ -31,33 +31,37 @@ fn main() {
 	let orange_sphere = shapes::sphere::Sphere {
 		center: core::Point(0.0, 0.0, 4.0),
 		radius: 1.0,
-		color:  core::Color(0xff, 0xa5, 0x00)
+		color:  core::Color(0xff, 0xa5, 0x00),
+		reflection: 20
 	};
 
 	let cyan_sphere = shapes::sphere::Sphere {
 		center: core::Point(-2.0, -1.0, 8.0),
 		radius: 1.5,
-		color:  core::Color(0, 0xce, 0xd1)
+		color:  core::Color(0, 0xce, 0xd1),
+		reflection: 20
 	};
 
 	let coral_sphere = shapes::sphere::Sphere {
 		center: core::Point(2.0, -1.0, 8.0),
 		radius: 1.5,
-		color:  core::Color(0xf0, 0x80, 0x80)
+		color:  core::Color(0xf0, 0x80, 0x80),
+		reflection: 20
 	};
 
 	let floor = shapes::plane::Plane {
 		center: core::Point(0.0, 1.0, 0.0),
 		normal: core::Point(0.0, 1.0, 0.0),
-		color:  core::Color(255, 255, 255)
+		color:  core::Color(255, 255, 255),
+		reflection: 20
 	};
 
 	let light1 = lighting::Light::Ambient{
-		intensity: 0.4
+		intensity: 0.5
 	};
 
 	let light2 = lighting::Light::Point{
-		intensity: 0.4,
+		intensity: 0.3,
 		position:  core::Point(5.0, -5.0, 0.0)
 	};
 
@@ -92,11 +96,9 @@ fn main() {
 				}
 			}
 
-			let light_intensity = compute_lighting(&ray, &closest_shape, &light_sources);
+			let light_intensity = lighting::compute_lighting(&light_sources, &ray, &closest_shape);
 			let color = closest_shape.0.get_color();
-			let color = ((color.0 as f32 * light_intensity) as u8,
-						 (color.1 as f32 * light_intensity) as u8,
-						 (color.2 as f32 * light_intensity) as u8);
+			let color = update_color(color, light_intensity);
 
 			img.get_pixel_mut((x + IMAGE_SIZE.0 as i32 / 2) as u32, (y + IMAGE_SIZE.1 as i32 / 2) as u32).data =
 				[color.0, color.1, color.2];
@@ -119,10 +121,17 @@ fn scene_to_viewport(x: i32, y:i32) -> core::Point {
 		y as f32 * VIEWPORT.1 / IMAGE_SIZE.1 as f32, VIEWPORT_DISTANCE)
 }
 
-fn compute_lighting(ray: &core::Ray,
-                    closest_shape: &(&Intersection, f32),
-					light_sources: &Vec<&lighting::Light>) -> f32 {
-	let p = math::add(&ray.origin, &math::multiply(&ray.direction, closest_shape.1));
-	let n = closest_shape.0.get_normal(&p);
-	lighting::compute_lighting(light_sources, &p, &n)
+fn update_color(color: &core::Color, light_intensity: f32) -> core::Color {
+	fn update_channel(ch: u8, light_intensity: f32) -> u8 {
+		let res = ch as f32 * light_intensity;
+		if res > 255.0 {
+			return 255;
+		}
+
+		res as u8
+	}
+
+	core::Color(update_channel(color.0, light_intensity),
+	            update_channel(color.1, light_intensity),
+	            update_channel(color.2, light_intensity))
 }

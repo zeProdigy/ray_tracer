@@ -5,7 +5,8 @@ use super::Intersection;
 pub struct Plane {
 	pub center: core::Point,
 	pub normal: core::Point,
-	pub color: core::Color
+	pub color: core::Color,
+	pub reflection: i32
 }
 
 impl Intersection for Plane {
@@ -30,5 +31,9 @@ impl Intersection for Plane {
 
 	fn get_normal(&self, _intersect: &core::Point) -> core::Point {
 		core::Point(self.normal.0, self.normal.1, self.normal.2)
+	}
+
+    fn get_reflection_rate(&self) -> i32 {
+		self.reflection
 	}
 }
