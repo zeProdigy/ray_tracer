@@ -2,6 +2,7 @@ use crate::core;
 
 pub mod sphere;
 pub mod plane;
+pub mod background;
 
 pub trait Intersection {
 	fn is_intersect(&self, ray: &core::Ray) -> (bool, f32);

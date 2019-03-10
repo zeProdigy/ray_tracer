@@ -56,21 +56,26 @@ fn main() {
 		reflection: 20
 	};
 
-	let light1 = lighting::Light::Ambient{
-		intensity: 0.5
+	let light1 = lighting::Light::Ambient {
+		intensity: 0.2
 	};
 
-	let light2 = lighting::Light::Point{
-		intensity: 0.3,
+	let light2 = lighting::Light::Point {
+		intensity: 0.5,
 		position:  core::Point(5.0, -5.0, 0.0)
 	};
 
-	let light3 = lighting::Light::Directional{
-		intensity: 0.2,
+	let light3 = lighting::Light::Directional {
+		intensity: 0.3,
 		direction: core::Point(-1.0, -3.0, -3.0)
 	};
 
-	let scene: Vec<&Intersection> = vec![&orange_sphere, &cyan_sphere, &coral_sphere, &floor];
+	let background = shapes::background::Background {
+		color: core::Color(0, 0, 0),
+		reflection: 0
+	};
+
+	let scene: Vec<&Intersection> = vec![&orange_sphere, &cyan_sphere, &coral_sphere, &floor, &background];
 	let light_sources: Vec<&lighting::Light> = vec![&light1, &light2, &light3];
 
 	let mut img = ImageBuffer::<Rgb<u8>, Vec<u8>>::new(IMAGE_SIZE.0, IMAGE_SIZE.1);
@@ -81,7 +86,7 @@ fn main() {
 
 	for x in -(IMAGE_SIZE.0 as i32 / 2)..IMAGE_SIZE.0 as i32 / 2 {
 		for y in -(IMAGE_SIZE.1 as i32 /2)..IMAGE_SIZE.1 as i32 / 2 {
-			let mut closest_shape: (&Intersection, f32) = (&floor, f32::INFINITY);
+			let mut closest_shape: (&Intersection, f32) = (&background, f32::INFINITY);
 			let viewport_pixel = scene_to_viewport(x, y);
 			let ray = core::Ray {
 				origin: &VIEW_POINT,
