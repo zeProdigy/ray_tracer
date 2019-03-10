@@ -27,6 +27,14 @@ const VIEW_POINT: core::Point = core::Point(0.0, 0.0, 0.0);
 const VIEWPORT: (f32, f32) = (1.0, 1.0);
 const VIEWPORT_DISTANCE: f32 = 1.0;
 
+const SUBPIXELS_NUM: u32 = 4;
+const JITTER_MATRIX: [(f32, f32); 4] = [
+    (-1.0/4.0,  3.0/4.0),
+    (3.0/4.0,  1.0/3.0),
+    (-3.0/4.0, -1.0/4.0),
+    (1.0/4.0, -3.0/4.0)
+];
+
 fn main() {
     let orange_sphere = shapes::sphere::Sphere {
         center: core::Point(0.0, 0.0, 4.0),
@@ -86,27 +94,41 @@ fn main() {
 
     for x in 0..IMAGE_SIZE.0 {
         for y in 0..IMAGE_SIZE.1 {
-            let mut closest_shape: (&Intersection, f32) = (&background, f32::INFINITY);
-            let viewport_pixel = scene_to_viewport(x, y);
-            let ray = core::Ray {
-                origin: &VIEW_POINT,
-                direction: &viewport_pixel
-            };
+            let mut color_sum: (u32, u32, u32) = (0, 0, 0);
 
-            for &shape in scene.iter() {
-                let intersect = shape.is_intersect(&ray, VIEWPORT_DISTANCE, f32::INFINITY);
-                if (intersect.0 == true) && (intersect.1 < closest_shape.1) {
-                    closest_shape.0 = shape;
-                    closest_shape.1 = intersect.1;
+            for subpixel in 0..SUBPIXELS_NUM as usize {
+                let mut closest_shape: (&Intersection, f32) = (&background, f32::INFINITY);
+
+                let x = x as f32 + JITTER_MATRIX[subpixel].0;
+                let y = y as f32 + JITTER_MATRIX[subpixel].1;
+                let viewport_pixel = scene_to_viewport(x, y);
+
+                let ray = core::Ray {
+                    origin: &VIEW_POINT,
+                    direction: &viewport_pixel
+                };
+
+                for &shape in scene.iter() {
+                    let intersect = shape.is_intersect(&ray, VIEWPORT_DISTANCE, f32::INFINITY);
+                    if (intersect.0 == true) && (intersect.1 < closest_shape.1) {
+                        closest_shape.0 = shape;
+                        closest_shape.1 = intersect.1;
+                    }
                 }
+
+                let light_intensity = lighting::compute_lighting(&light_sources, &ray, &closest_shape);
+                let color = closest_shape.0.get_color();
+                let color = update_color(color, light_intensity);
+
+                color_sum.0 += color.0 as u32;
+                color_sum.1 += color.1 as u32;
+                color_sum.2 += color.2 as u32;
             }
 
-            let light_intensity = lighting::compute_lighting(&light_sources, &ray, &closest_shape);
-            let color = closest_shape.0.get_color();
-            let color = update_color(color, light_intensity);
+            let pixel_color = average_color(color_sum);
 
             img.get_pixel_mut(x , y).data =
-                [color.0, color.1, color.2];
+                [pixel_color.0, pixel_color.1, pixel_color.2];
 
             processed += 1;
 
@@ -121,9 +143,9 @@ fn main() {
     img.save("out.png").unwrap();
 }
 
-fn scene_to_viewport(x: u32, y: u32) -> core::Point {
-    let x: f32 = x as f32 - IMAGE_SIZE.0 as f32 / 2.0;
-    let y: f32 = y as f32 - IMAGE_SIZE.1 as f32 / 2.0;
+fn scene_to_viewport(x: f32, y: f32) -> core::Point {
+    let x: f32 = x - IMAGE_SIZE.0 as f32 / 2.0;
+    let y: f32 = y - IMAGE_SIZE.1 as f32 / 2.0;
 
     core::Point(x * VIEWPORT.0 / IMAGE_SIZE.0 as f32,
         y * VIEWPORT.1 / IMAGE_SIZE.1 as f32, VIEWPORT_DISTANCE)
@@ -142,4 +164,20 @@ fn update_color(color: &core::Color, light_intensity: f32) -> core::Color {
     core::Color(update_channel(color.0, light_intensity),
                 update_channel(color.1, light_intensity),
                 update_channel(color.2, light_intensity))
+}
+
+fn average_color(color_sum: (u32, u32, u32)) -> core::Color {
+    fn convert(x: u32) -> u8 {
+        if x > 255 {
+            return 255;
+        }
+
+        x as u8
+    }
+
+    let r: u8 = convert(color_sum.0 / SUBPIXELS_NUM);
+    let g: u8 = convert(color_sum.1 / SUBPIXELS_NUM);
+    let b: u8 = convert(color_sum.2 / SUBPIXELS_NUM);
+
+    core::Color(r, g, b)
 }
