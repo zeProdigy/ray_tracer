@@ -7,21 +7,19 @@ pub struct Background {
 }
 
 impl Intersection for Background {
-	fn is_intersect(&self, _ray: &core::Ray, _tmin: f32, _tmax: f32) -> (bool, f32) {
+    fn is_intersect(&self, _ray: &core::Ray, _tmin: f32, _tmax: f32) -> (bool, f32) {
         (false, 0.0)
     }
 
     fn get_color(&self) -> &core::Color {
-		&self.color
-	}
+        &self.color
+    }
 
     fn get_normal(&self, _intersect: &core::Point) -> core::Point {
-		core::Point(0.0, 0.0, 0.0)
-	}
+        core::Point(0.0, 0.0, 0.0)
+    }
 
     fn get_reflection_rate(&self) -> i32 {
-		self.reflection
-	}
+        self.reflection
+    }
 }
-
-
