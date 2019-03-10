@@ -10,7 +10,7 @@ pub struct Plane {
 }
 
 impl Intersection for Plane {
-	fn is_intersect(&self, ray: &core::Ray) -> (bool, f32) {
+	fn is_intersect(&self, ray: &core::Ray, _tmin: f32, _tmax: f32) -> (bool, f32) {
 		let denominator = math::dot(&self.normal, ray.direction);
 
 		if denominator.abs() > 0.0001 {

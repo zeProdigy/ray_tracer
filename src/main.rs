@@ -94,7 +94,7 @@ fn main() {
 			};
 
 			for &shape in scene.iter() {
-				let intersect = shape.is_intersect(&ray);
+				let intersect = shape.is_intersect(&ray, VIEWPORT_DISTANCE, f32::INFINITY);
 				if (intersect.0 == true) && (intersect.1 < closest_shape.1) {
 					closest_shape.0 = shape;
 					closest_shape.1 = intersect.1;
