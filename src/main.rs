@@ -84,8 +84,8 @@ fn main() {
     let mut progress = 0;
     let mut processed = 0;
 
-    for x in -(IMAGE_SIZE.0 as i32 / 2)..IMAGE_SIZE.0 as i32 / 2 {
-        for y in -(IMAGE_SIZE.1 as i32 /2)..IMAGE_SIZE.1 as i32 / 2 {
+    for x in 0..IMAGE_SIZE.0 {
+        for y in 0..IMAGE_SIZE.1 {
             let mut closest_shape: (&Intersection, f32) = (&background, f32::INFINITY);
             let viewport_pixel = scene_to_viewport(x, y);
             let ray = core::Ray {
@@ -105,7 +105,7 @@ fn main() {
             let color = closest_shape.0.get_color();
             let color = update_color(color, light_intensity);
 
-            img.get_pixel_mut((x + IMAGE_SIZE.0 as i32 / 2) as u32, (y + IMAGE_SIZE.1 as i32 / 2) as u32).data =
+            img.get_pixel_mut(x , y).data =
                 [color.0, color.1, color.2];
 
             processed += 1;
@@ -121,9 +121,12 @@ fn main() {
     img.save("out.png").unwrap();
 }
 
-fn scene_to_viewport(x: i32, y:i32) -> core::Point {
-    core::Point(x as f32 * VIEWPORT.0 / IMAGE_SIZE.0 as f32,
-        y as f32 * VIEWPORT.1 / IMAGE_SIZE.1 as f32, VIEWPORT_DISTANCE)
+fn scene_to_viewport(x: u32, y: u32) -> core::Point {
+    let x: f32 = x as f32 - IMAGE_SIZE.0 as f32 / 2.0;
+    let y: f32 = y as f32 - IMAGE_SIZE.1 as f32 / 2.0;
+
+    core::Point(x * VIEWPORT.0 / IMAGE_SIZE.0 as f32,
+        y * VIEWPORT.1 / IMAGE_SIZE.1 as f32, VIEWPORT_DISTANCE)
 }
 
 fn update_color(color: &core::Color, light_intensity: f32) -> core::Color {
