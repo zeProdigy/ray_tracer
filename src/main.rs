@@ -37,45 +37,45 @@ const JITTER_MATRIX: [(f32, f32); 4] = [
 
 fn main() {
     let orange_sphere = shapes::sphere::Sphere {
-        center: core::Point(0.0, 0.0, 4.0),
-        radius: 1.0,
+        center: core::Point(-0.5, 0.5, 6.0),
+        radius: 0.5,
         color:  core::Color(0xff, 0xa5, 0x00),
         reflection: 20
     };
 
     let cyan_sphere = shapes::sphere::Sphere {
-        center: core::Point(-2.0, -1.0, 8.0),
+        center: core::Point(-2.0, -0.5, 8.0),
         radius: 1.5,
         color:  core::Color(0, 0xce, 0xd1),
         reflection: 20
     };
 
     let coral_sphere = shapes::sphere::Sphere {
-        center: core::Point(2.0, -1.0, 8.0),
-        radius: 1.5,
+        center: core::Point(1.5, -1.0, 8.0),
+        radius: 2.0,
         color:  core::Color(0xf0, 0x80, 0x80),
         reflection: 20
     };
 
     let floor = shapes::plane::Plane {
         center: core::Point(0.0, 1.0, 0.0),
-        normal: core::Point(0.0, 1.0, 0.0),
+        normal: core::Point(0.0, -1.0, 0.0),
         color:  core::Color(255, 255, 255),
         reflection: 20
     };
 
     let light1 = lighting::Light::Ambient {
-        intensity: 0.2
+        intensity: 0.05
     };
 
     let light2 = lighting::Light::Point {
-        intensity: 0.5,
-        position:  core::Point(5.0, -5.0, 0.0)
+        intensity: 0.35,
+        position:  core::Point(-5.0, -5.0, -10.0)
     };
 
     let light3 = lighting::Light::Directional {
-        intensity: 0.3,
-        direction: core::Point(-1.0, -3.0, -3.0)
+        intensity: 0.6,
+        direction: core::Point(5.0, -10.0, 10.0)
     };
 
     let background = shapes::background::Background {
@@ -116,7 +116,7 @@ fn main() {
                     }
                 }
 
-                let light_intensity = lighting::compute_lighting(&light_sources, &ray, &closest_shape);
+                let light_intensity = lighting::compute_lighting(&scene, &light_sources, &ray, &closest_shape);
                 let color = closest_shape.0.get_color();
                 let color = update_color(color, light_intensity);
 
