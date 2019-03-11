@@ -2,13 +2,15 @@ use crate::core;
 use crate::math;
 use crate::shapes;
 
+use std::f32;
+
 pub enum Light {
     Ambient {intensity: f32},
     Point {intensity: f32, position: core::Point},
     Directional {intensity: f32, direction: core::Point}
 }
 
-pub fn compute_lighting(sources: &Vec<&Light>, ray: &core::Ray, shape: &(&shapes::Intersection, f32)) -> f32 {
+pub fn compute_lighting(scene: &Vec<&shapes::Intersection>, sources: &Vec<&Light>, ray: &core::Ray, shape: &(&shapes::Intersection, f32)) -> f32 {
     let mut sum = 0.0;
     let intersect = math::add(&ray.origin, &math::multiply(&ray.direction, shape.1));
     let normal = shape.0.get_normal(&intersect);
@@ -21,12 +23,24 @@ pub fn compute_lighting(sources: &Vec<&Light>, ray: &core::Ray, shape: &(&shapes
 
             Light::Point{intensity, position} => {
                 let light_dir = math::subtract(position, &intersect);
+
+                let in_shadow = in_shadow(scene, &intersect, &light_dir, 1.0);
+                if in_shadow == true {
+                    continue;
+                }
+
                 sum += *intensity * diffuse_light(&light_dir, &normal);
                 sum += *intensity * reflection_light(&light_dir, &normal, ray, shape);
             }
 
             Light::Directional{intensity, direction} => {
                 let light_dir = direction;
+
+                let in_shadow = in_shadow(scene, &intersect, &light_dir, f32::INFINITY);
+                if in_shadow == true {
+                    continue;
+                }
+
                 sum += *intensity * diffuse_light(&light_dir, &normal);
                 sum += *intensity * reflection_light(&light_dir, &normal, ray, shape);
             }
@@ -63,4 +77,20 @@ fn reflection_light(light_dir: &core::Point,
     }
 
     0.0
+}
+
+fn in_shadow(scene: &Vec<&shapes::Intersection>, intersection: &core::Point, light: &core::Point, tmax: f32) -> bool {
+    let shadow_ray = core::Ray {
+        origin: intersection,
+        direction: light
+    };
+
+    for &shape in scene.iter() {
+        let intersect = shape.is_intersect(&shadow_ray, 0.001, tmax);
+        if intersect.0 == true {
+            return true;
+        }
+    }
+
+    false
 }
