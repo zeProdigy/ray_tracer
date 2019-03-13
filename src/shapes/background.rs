@@ -3,7 +3,8 @@ use super::Intersection;
 
 pub struct Background {
     pub color: core::Color,
-    pub reflection: i32
+    pub reflection: i32,
+    pub specular: f32
 }
 
 impl Intersection for Background {
@@ -21,5 +22,9 @@ impl Intersection for Background {
 
     fn get_reflection_rate(&self) -> i32 {
         self.reflection
+    }
+
+    fn get_specular_rate(&self) -> f32 {
+        self.specular
     }
 }

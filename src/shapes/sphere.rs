@@ -7,7 +7,8 @@ pub struct Sphere {
     pub center: core::Point,
     pub radius: f32,
     pub color: core::Color,
-    pub reflection: i32
+    pub reflection: i32,
+    pub specular: f32
 }
 
 impl Intersection for Sphere {
@@ -51,5 +52,9 @@ impl Intersection for Sphere {
 
     fn get_reflection_rate(&self) -> i32 {
         self.reflection
+    }
+
+    fn get_specular_rate(&self) -> f32 {
+        self.specular
     }
 }
