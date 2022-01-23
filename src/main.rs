@@ -22,7 +22,7 @@ mod lighting;
     *------ +X
 */
 
-const IMAGE_SIZE: (u32, u32) = (500, 500);
+const IMAGE_SIZE: (u32, u32) = (2048, 2048);
 const VIEW_POINT: core::Point = core::Point(0.0, 0.0, 0.0);
 const VIEWPORT: (f32, f32) = (1.0, 1.0);
 const VIEWPORT_DISTANCE: f32 = 1.0;
